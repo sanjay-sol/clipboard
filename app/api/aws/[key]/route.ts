@@ -10,7 +10,7 @@ export const GET = async(req: NextRequest, res: NextResponse) => {
         const key = reqUrl[5];
         const exists = await checkObjectExist(bucketName, key);
         const url = await getPresignedUrl(key);
-        if (!exists) {
+        if (exists) {
             return NextResponse.json({ url :"" }, { status: 200 });
         }
     return NextResponse.json({ url: url }, { status: 200 }); 
