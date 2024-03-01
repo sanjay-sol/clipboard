@@ -3,24 +3,47 @@ import React, { useState, useEffect } from "react";
 import { getSignedUrl, uploadFile } from "../utils/handler";
 import { getObjectUrl } from "../utils/getObject";
 import toast, { Toaster } from "react-hot-toast";
+import JSZip from "jszip";
+
 type Props = {
   params: {
     key: string;
   };
 };
+
 const App = ({ params }: Props) => {
   const param: string = params.key;
   console.log("param", param);
 
   const [url, setUrl] = useState<string>("");
-  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
   const [hadObject, setHadObject] = useState<boolean>(false);
   const [loading, setLoading] = useState<boolean>(true);
+  const [formData, setFormData] = useState<File | Blob | null>(null);
+  const [response, setResponse] = useState<any>({});
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file: File | null = e.target.files?.[0] || null;
-    setSelectedFile(file);
+    const files: FileList | null = e.target.files;
+    if (files) {
+      const fileList: File[] = Array.from(files);
+      setSelectedFiles(fileList);
+    }
   };
+
+  const zipFiles = async (files : File[]) => {
+    const zip = new JSZip();
+    files.forEach((file, index) => {
+      zip.file(`${file.name ? file.name : `file${index}`}`, file);
+    });
+
+    const formData = await zip.generateAsync({ type: "blob" });
+    return formData;
+  };
+
+  const uploadFiles = async (url : any , formData: File | Blob | null) => {
+    const response: any = await uploadFile(url, formData);
+    setResponse(response);
+  }
 
   useEffect(() => {
     const fetchData = async () => {
@@ -44,30 +67,41 @@ const App = ({ params }: Props) => {
   }, [param]);
 
   const handleUpload = async () => {
-    if (!url || !selectedFile) return;
+    if (!url || selectedFiles.length === 0) return;
     try {
-      const response: any = await uploadFile(url, selectedFile);
-      if (response && response?.status === 200) {
-        toast.success("Clip created successfully ..page refreshes in 5 sec", {
+      if (selectedFiles.length == 1) {
+        // console.log("selectedFiles[0]", selectedFiles[0])
+        await uploadFiles(url, selectedFiles[0]);
+      } else {
+        const formData = await zipFiles(selectedFiles);
+        console.log("formData", formData)
+        await uploadFiles(url, formData);
+      }
+      console.log("response", response);
+      if (response) {
+        toast.success("Files uploaded successfully ..page refreshes in 5 sec", {
           id: "1",
         });
-        setTimeout(() => {
-          window.location.reload();
-        }, 5000);
+        // setTimeout(() => {
+        //   window.location.reload();
+        // }, 5000);
       } else {
-         toast.error("Presigned url has Expired ..page refreshes in 5 sec", {
-           id: "1",
-         });
-        setTimeout(() => {
-          window.location.reload();
-        }, 5000);
+      console.error("Error uploading file to S3:::", response);
+        toast.error("Presigned url has expired ..page refreshes in 5 sec", {
+          id: "1",
+        });
+        // setTimeout(() => {
+        //   window.location.reload();
+        // }, 5000);
       }
     } catch (error) {
-      console.error("Error uploading file to S3:", error);
-      toast.error("Presigned url has Expired ..page refreshes in 5 sec", { id: "1" });
-      setTimeout(() => {
-        window.location.reload();
-      }, 5000);
+      console.error("Error uploading file to S3:sss", error);
+      toast.error("Presigned url has expired ..page refreshes in 5 sec", {
+        id: "1",
+      });
+      // setTimeout(() => {
+      //   window.location.reload();
+      // }, 5000);
     }
   };
 
@@ -79,7 +113,6 @@ const App = ({ params }: Props) => {
           <p>Loading...</p>
         ) : (
           <>
-            <Toaster />
             {hadObject ? (
               <>
                 <div className="m-3">
@@ -91,12 +124,12 @@ const App = ({ params }: Props) => {
                   >
                     Download
                   </a>
+                  <p>{url}</p>
                 </div>
               </>
             ) : (
               <>
-                <Toaster />
-                <input type="file" onChange={handleFileChange} />
+                <input type="file" onChange={handleFileChange} multiple />
                 <button onClick={handleUpload}>Upload</button>
               </>
             )}

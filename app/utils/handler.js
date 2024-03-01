@@ -1,7 +1,9 @@
 import axios from "axios";
-const headers = {
-  "Content-Type": "multipart/form-data",
-};
+// const mimeType = require("mime-types");
+import mime from "mime-types";
+// const headers = {
+//   "Content-Type": "multipart/form-data",
+// };
 
 const API_URI = "/api/aws";
 
@@ -17,7 +19,7 @@ export const getSignedUrl = async (slug) => {
 
 export const uploadFile = async (url, file) => {
   try {
-    const response = await axios.put(url, file, { headers: headers });
+    const response = await axios.put(url, file, { headers: { "Content-Type": mime.lookup(file) } });
     return response;
   } catch (error) {
     console.log("Error while calling the API--- ", error.message);
