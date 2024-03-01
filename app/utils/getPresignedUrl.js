@@ -11,7 +11,7 @@ const getPresignedUrl = async (slug) => {
       Key: slug,
     });
     const url = await getSignedUrl(s3Client, putObjectCommand, {
-      expiresIn: 3600,
+      expiresIn: 5*60,
     });
     return url;
   } catch (error) {

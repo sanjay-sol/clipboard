@@ -19,8 +19,6 @@ const App = ({ params }: Props) => {
   const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
   const [hadObject, setHadObject] = useState<boolean>(false);
   const [loading, setLoading] = useState<boolean>(true);
-  const [formData, setFormData] = useState<File | Blob | null>(null);
-  const [response, setResponse] = useState<any>({});
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files: FileList | null = e.target.files;
@@ -30,7 +28,7 @@ const App = ({ params }: Props) => {
     }
   };
 
-  const zipFiles = async (files : File[]) => {
+  const zipFiles = async (files: File[]) => {
     const zip = new JSZip();
     files.forEach((file, index) => {
       zip.file(`${file.name ? file.name : `file${index}`}`, file);
@@ -40,10 +38,18 @@ const App = ({ params }: Props) => {
     return formData;
   };
 
-  const uploadFiles = async (url : any , formData: File | Blob | null) => {
-    const response: any = await uploadFile(url, formData);
-    setResponse(response);
-  }
+  // const timer: any = document.getElementById("timer");
+  // let timeleft = 3;
+  // let downloadTimer = setInterval(function () {
+  //   if (timeleft <= 0 && timer) {
+  //     timer.innerHTML = timeleft + " time up remaining";
+  //     clearInterval(downloadTimer);
+  //   }
+  //   if (timer) {
+  //     timer.innerHTML = timeleft + " seconds remaining";
+  //     timeleft -= 1;
+  //   }
+  // }, 1000);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -70,38 +76,59 @@ const App = ({ params }: Props) => {
     if (!url || selectedFiles.length === 0) return;
     try {
       if (selectedFiles.length == 1) {
-        // console.log("selectedFiles[0]", selectedFiles[0])
-        await uploadFiles(url, selectedFiles[0]);
+        const uploadResponse: any = await uploadFile(url, selectedFiles[0]);
+        console.log("response", uploadResponse);
+        if (uploadResponse && uploadResponse.status === 200) {
+          toast.success(
+            "Files uploaded successfully ..page refreshes in 5 sec",
+            {
+              id: "1",
+            }
+          );
+          setTimeout(() => {
+            window.location.reload();
+          }, 5000);
+        } else {
+          console.error("Error uploading file to S3:::", uploadResponse);
+          toast.error("Presigned url has expired ..page refreshes in 5 sec", {
+            id: "1",
+          });
+          setTimeout(() => {
+            window.location.reload();
+          }, 5000);
+        }
       } else {
         const formData = await zipFiles(selectedFiles);
-        console.log("formData", formData)
-        await uploadFiles(url, formData);
-      }
-      console.log("response", response);
-      if (response) {
-        toast.success("Files uploaded successfully ..page refreshes in 5 sec", {
-          id: "1",
-        });
-        // setTimeout(() => {
-        //   window.location.reload();
-        // }, 5000);
-      } else {
-      console.error("Error uploading file to S3:::", response);
-        toast.error("Presigned url has expired ..page refreshes in 5 sec", {
-          id: "1",
-        });
-        // setTimeout(() => {
-        //   window.location.reload();
-        // }, 5000);
+        const uploadResponse: any = await uploadFile(url, formData);
+        console.log("response--", uploadResponse);
+        if (uploadResponse && uploadResponse.status === 200) {
+          toast.success(
+            "Files uploaded successfully ..page refreshes in 5 sec",
+            {
+              id: "1",
+            }
+          );
+          setTimeout(() => {
+            window.location.reload();
+          }, 5000);
+        } else {
+          console.error("Error uploading file to S3:::", uploadResponse);
+          toast.error("Presigned url has expired ..page refreshes in 5 sec", {
+            id: "1",
+          });
+          setTimeout(() => {
+            window.location.reload();
+          }, 5000);
+        }
       }
     } catch (error) {
       console.error("Error uploading file to S3:sss", error);
       toast.error("Presigned url has expired ..page refreshes in 5 sec", {
         id: "1",
       });
-      // setTimeout(() => {
-      //   window.location.reload();
-      // }, 5000);
+      setTimeout(() => {
+        window.location.reload();
+      }, 5000);
     }
   };
 
@@ -128,7 +155,8 @@ const App = ({ params }: Props) => {
                 </div>
               </>
             ) : (
-              <>
+                  <>
+                    <p>Page Refreshes in </p> <p id="timer"></p>
                 <input type="file" onChange={handleFileChange} multiple />
                 <button onClick={handleUpload}>Upload</button>
               </>
