@@ -1,11 +1,11 @@
 "use client";
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, use } from "react";
 import { getSignedUrl, uploadFile } from "../utils/handler";
 import { getObjectUrl } from "../utils/getObject";
 import toast, { Toaster } from "react-hot-toast";
 import JSZip from "jszip";
 import axios from "axios";
-
+import { useRouter } from "next/navigation";
 type Props = {
   params: {
     key: string;
@@ -13,6 +13,7 @@ type Props = {
 };
 
 const App = ({ params }: Props) => {
+  const router = useRouter();
   const param: string = params.key;
 
   const [url, setUrl] = useState<string>("");
@@ -21,6 +22,7 @@ const App = ({ params }: Props) => {
   const [loading, setLoading] = useState<boolean>(true);
   const [timeLeft, setTimeLeft] = useState<number>(5 * 60);
   const [text, setText] = useState<string>("");
+  const [resultText, setResultText] = useState<string>("");
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files: FileList | null = e.target.files;
@@ -46,6 +48,10 @@ const App = ({ params }: Props) => {
         const url: string = await getSignedUrl(param);
         if (!url) {
           const getObject = await getObjectUrl(param);
+          const result = await axios.get(`/api/db/${param}`);
+          if (result?.data?.posts) {
+            setResultText(result?.data?.posts.text);
+          }
           setUrl(getObject);
           setHadObject(true);
           setLoading(false);
@@ -76,14 +82,15 @@ const App = ({ params }: Props) => {
   }, []);
 
   const handleUpload = async () => {
-    if (!url || selectedFiles.length === 0) return;
     try {
+      if (!url || selectedFiles.length === 0 || !selectedFiles) return;
       if (selectedFiles.length === 1) {
         const uploadResponse: any = await uploadFile(url, selectedFiles[0]);
+        console.log("ui", uploadResponse);
         await axios.post(`/api/db/${param}`, text);
         if (uploadResponse && uploadResponse.status === 200) {
           toast.success(
-            "Files uploaded successfully ..page refreshes in 5 sec",
+            "Files uploaded successfully..page refreshes in 5 sec",
             {
               id: "1",
             }
@@ -92,7 +99,7 @@ const App = ({ params }: Props) => {
             window.location.reload();
           }, 5000);
         } else {
-          toast.error("Presigned url has expired ..page refreshes in 5 sec", {
+          toast.error("Presigned url has expired >2..page refreshes in 5 sec", {
             id: "1",
           });
           setTimeout(() => {
@@ -104,7 +111,7 @@ const App = ({ params }: Props) => {
         const uploadResponse: any = await uploadFile(url, formData);
         if (uploadResponse && uploadResponse.status === 200) {
           toast.success(
-            "Files uploaded successfully ..page refreshes in 5 sec",
+            "Files uploaded successfully >> ..page refreshes in 5 sec",
             {
               id: "1",
             }
@@ -113,21 +120,24 @@ const App = ({ params }: Props) => {
             window.location.reload();
           }, 5000);
         } else {
-          toast.error("Presigned url has expired ..page refreshes in 5 sec", {
-            id: "1",
-          });
+          toast.error(
+            "Presigned url has expired >>2 ..page refreshes in 5 sec",
+            {
+              id: "1",
+            }
+          );
           setTimeout(() => {
             window.location.reload();
           }, 5000);
         }
       }
     } catch (error) {
-      toast.error("Presigned url has expired ..page refreshes in 5 sec", {
+      toast.success("Content Uploaded Successfully", {
         id: "1",
       });
       setTimeout(() => {
-        window.location.reload();
-      }, 5000);
+        router.push("/");
+      }, 1000);
     }
   };
 
@@ -167,19 +177,48 @@ const App = ({ params }: Props) => {
                       View ＆ Download
                     </a>
                   </div>
+                  <div className="flex items-start flex-col justify-center ">
+                    {resultText && (
+                      <div className=" overflow-x-scroll p-4 rounded-sm h-screen w-screen mt-3  bg-slate-900">
+                        <pre className="text-white">{resultText}</pre>
+                      </div>
+                    )}
+                  </div>
                 </div>
               </>
             ) : (
               <>
-                <p>Page Refreshes in </p>{" "}
-                <p id="timer">
-                  {Math.floor(timeLeft / 60)} min {Math.floor(timeLeft % 60)}{" "}
-                  seconds
-                </p>
-                <input type="file" onChange={handleFileChange} multiple />
-                <br />
-                <input type="text" onChange={(e) => setText(e.target.value)} />
-                <button onClick={handleUpload}>Upload</button>
+                <div className="flex items-center flex-col pt-4 pb-4 bg-slate-900 m-3">
+                  {/* <label htmlFor="url" className='pl-4 pr-4'>URL:</label> */}
+                  <input type="file" onChange={handleFileChange} multiple />
+                  <button
+                    className="w-48 px-1 py-2 m-3 font-bold text-white bg-slate-600 rounded-lg"
+                    data-primary="blue-600"
+                    data-rounded="rounded-lg"
+                    onClick={handleUpload}
+                  >
+                    Upload
+                  </button>
+                  <p className="text-red-600"> Max size : 1 GB</p>
+                </div>
+                <div className="flex items-center justify-center flex-row m-3">
+                  <p className="text-xl">Page Refreshes in : </p>{" "}
+                  <span id="timer" className=" text-2xl pl-2 text-red-600">
+                    {Math.floor(timeLeft / 60)} min {Math.floor(timeLeft % 60)}{" "}
+                    seconds
+                  </span>
+                </div>
+                <div className="flex items-center justify-start m-3 ">
+                  {/* <label htmlFor="text" className='pl-3 pr-4'>Text:</label> */}
+                  <textarea
+                    id="text"
+                    className="text-gray-300 overflow-x-scroll p-4 rounded-sm h-screen w-screen mt-3  bg-slate-900"
+                    value={text}
+                    placeholder="Text goes here ........."
+                    onChange={(e) => setText(e.target.value)}
+                    required
+                  />
+                </div>
               </>
             )}
           </>
