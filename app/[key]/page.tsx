@@ -1,6 +1,7 @@
 "use client";
 import React, { useState, useEffect } from "react";
 import { getSignedUrl, uploadFile } from "../utils/handler";
+import { getObjectUrl } from "../utils/getObject";
 type Props = {
   params: {
     key: string;
@@ -11,7 +12,8 @@ const App = ({ params }: Props) => {
   console.log("param", param);
 
   const [url, setUrl] = useState<string>("");
-  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+    const [selectedFile, setSelectedFile] = useState<File | null>(null);
+    const [hadObject, setHadObject] = useState<boolean>(false);
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file: File | null = e.target.files?.[0] || null;
@@ -21,7 +23,14 @@ const App = ({ params }: Props) => {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const url: string = await getSignedUrl(param);
+          const url: string = await getSignedUrl(param);
+          console.log("url", !url);
+        if (!url) {
+        const getObject = await getObjectUrl(param);
+            setUrl(getObject);
+            setHadObject(true);
+            return;
+        }
         setUrl(url);
         console.log("url", url);
       } catch (error) {
@@ -41,12 +50,21 @@ const App = ({ params }: Props) => {
     }
   };
 
-  return (
-    <div>
-      <input type="file" onChange={handleFileChange} />
-      <button onClick={handleUpload}>Upload</button>
-    </div>
-  );
+return (
+  <div>
+    <>
+      {hadObject ? (
+        <p>{url}</p>
+      ) : (
+        <>
+          <input type="file" onChange={handleFileChange} />
+          <button onClick={handleUpload}>Upload</button>
+        </>
+      )}
+    </>
+  </div>
+);
+
 };
 
 export default App;
