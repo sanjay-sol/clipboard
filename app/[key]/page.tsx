@@ -13,12 +13,12 @@ type Props = {
 
 const App = ({ params }: Props) => {
   const param: string = params.key;
-  console.log("param", param);
 
   const [url, setUrl] = useState<string>("");
   const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
   const [hadObject, setHadObject] = useState<boolean>(false);
   const [loading, setLoading] = useState<boolean>(true);
+  const [timeLeft, setTimeLeft] = useState<number>(5*60);
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files: FileList | null = e.target.files;
@@ -38,19 +38,6 @@ const App = ({ params }: Props) => {
     return formData;
   };
 
-  // const timer: any = document.getElementById("timer");
-  // let timeleft = 3;
-  // let downloadTimer = setInterval(function () {
-  //   if (timeleft <= 0 && timer) {
-  //     timer.innerHTML = timeleft + " time up remaining";
-  //     clearInterval(downloadTimer);
-  //   }
-  //   if (timer) {
-  //     timer.innerHTML = timeleft + " seconds remaining";
-  //     timeleft -= 1;
-  //   }
-  // }, 1000);
-
   useEffect(() => {
     const fetchData = async () => {
       try {
@@ -64,20 +51,33 @@ const App = ({ params }: Props) => {
         }
         setUrl(url);
         setLoading(false);
-        console.log("url", url);
       } catch (error) {
-        console.error("Error fetching signed URL:", error);
+        toast.error(`Presigned url has expired ..${error}`, {
+          id: "1",
+        });
       }
     };
     fetchData();
   }, [param]);
 
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setTimeLeft((prevTimeLeft) => {
+        if (prevTimeLeft === 0) {
+          window.location.reload();
+        }
+        return prevTimeLeft - 1;
+      });
+    }, 1000);
+
+    return () => clearInterval(timer);
+  }, []);
+
   const handleUpload = async () => {
     if (!url || selectedFiles.length === 0) return;
     try {
-      if (selectedFiles.length == 1) {
+      if (selectedFiles.length === 1) {
         const uploadResponse: any = await uploadFile(url, selectedFiles[0]);
-        console.log("response", uploadResponse);
         if (uploadResponse && uploadResponse.status === 200) {
           toast.success(
             "Files uploaded successfully ..page refreshes in 5 sec",
@@ -89,7 +89,6 @@ const App = ({ params }: Props) => {
             window.location.reload();
           }, 5000);
         } else {
-          console.error("Error uploading file to S3:::", uploadResponse);
           toast.error("Presigned url has expired ..page refreshes in 5 sec", {
             id: "1",
           });
@@ -100,7 +99,6 @@ const App = ({ params }: Props) => {
       } else {
         const formData = await zipFiles(selectedFiles);
         const uploadResponse: any = await uploadFile(url, formData);
-        console.log("response--", uploadResponse);
         if (uploadResponse && uploadResponse.status === 200) {
           toast.success(
             "Files uploaded successfully ..page refreshes in 5 sec",
@@ -112,7 +110,6 @@ const App = ({ params }: Props) => {
             window.location.reload();
           }, 5000);
         } else {
-          console.error("Error uploading file to S3:::", uploadResponse);
           toast.error("Presigned url has expired ..page refreshes in 5 sec", {
             id: "1",
           });
@@ -122,7 +119,6 @@ const App = ({ params }: Props) => {
         }
       }
     } catch (error) {
-      console.error("Error uploading file to S3:sss", error);
       toast.error("Presigned url has expired ..page refreshes in 5 sec", {
         id: "1",
       });
@@ -155,8 +151,12 @@ const App = ({ params }: Props) => {
                 </div>
               </>
             ) : (
-                  <>
-                    <p>Page Refreshes in </p> <p id="timer"></p>
+              <>
+                <p>Page Refreshes in </p>{" "}
+                <p id="timer">
+                  {Math.floor(timeLeft / 60)} min {Math.floor(timeLeft % 60)}{" "}
+                  seconds
+                </p>
                 <input type="file" onChange={handleFileChange} multiple />
                 <button onClick={handleUpload}>Upload</button>
               </>
