@@ -2,6 +2,7 @@
 import React, { useState, useEffect } from "react";
 import { getSignedUrl, uploadFile } from "../utils/handler";
 import { getObjectUrl } from "../utils/getObject";
+import toast, { Toaster } from "react-hot-toast";
 type Props = {
   params: {
     key: string;
@@ -46,19 +47,39 @@ const App = ({ params }: Props) => {
     if (!url || !selectedFile) return;
     try {
       const response: any = await uploadFile(url, selectedFile);
-      console.log("ress", response?.status == 200);
+      if (response && response?.status === 200) {
+        toast.success("Clip created successfully ..page refreshes in 5 sec", {
+          id: "1",
+        });
+        setTimeout(() => {
+          window.location.reload();
+        }, 5000);
+      } else {
+         toast.error("Presigned url has Expired ..page refreshes in 5 sec", {
+           id: "1",
+         });
+        setTimeout(() => {
+          window.location.reload();
+        }, 5000);
+      }
     } catch (error) {
       console.error("Error uploading file to S3:", error);
+      toast.error("Presigned url has Expired ..page refreshes in 5 sec", { id: "1" });
+      setTimeout(() => {
+        window.location.reload();
+      }, 5000);
     }
   };
 
   return (
     <div>
+      <Toaster />
       <>
         {loading ? (
           <p>Loading...</p>
         ) : (
           <>
+            <Toaster />
             {hadObject ? (
               <>
                 <div className="m-3">
@@ -74,6 +95,7 @@ const App = ({ params }: Props) => {
               </>
             ) : (
               <>
+                <Toaster />
                 <input type="file" onChange={handleFileChange} />
                 <button onClick={handleUpload}>Upload</button>
               </>
