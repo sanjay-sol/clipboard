@@ -1,8 +1,8 @@
 import { timeStamp } from "console";
 import mongoose from "mongoose";
 
-const ClipSchema = new mongoose.Schema({
-    key: {
+const Clip_Schema = new mongoose.Schema({
+    name: {
         type: String,
         required: true,
         unique: true,
@@ -15,6 +15,6 @@ const ClipSchema = new mongoose.Schema({
 }
 );
 
-const Clip = mongoose.models.Clip || mongoose.model("Clip2", ClipSchema);
+const Clip = mongoose.models.newClip || mongoose.model("newClip", Clip_Schema);
 
 export default Clip;

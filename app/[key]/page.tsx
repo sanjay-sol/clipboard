@@ -4,6 +4,7 @@ import { getSignedUrl, uploadFile } from "../utils/handler";
 import { getObjectUrl } from "../utils/getObject";
 import toast, { Toaster } from "react-hot-toast";
 import JSZip from "jszip";
+import axios from "axios";
 
 type Props = {
   params: {
@@ -18,7 +19,8 @@ const App = ({ params }: Props) => {
   const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
   const [hadObject, setHadObject] = useState<boolean>(false);
   const [loading, setLoading] = useState<boolean>(true);
-  const [timeLeft, setTimeLeft] = useState<number>(5*60);
+  const [timeLeft, setTimeLeft] = useState<number>(5 * 60);
+  const [text, setText] = useState<string>("");
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files: FileList | null = e.target.files;
@@ -78,6 +80,7 @@ const App = ({ params }: Props) => {
     try {
       if (selectedFiles.length === 1) {
         const uploadResponse: any = await uploadFile(url, selectedFiles[0]);
+        await axios.post(`/api/db/${param}`, text);
         if (uploadResponse && uploadResponse.status === 200) {
           toast.success(
             "Files uploaded successfully ..page refreshes in 5 sec",
@@ -133,21 +136,37 @@ const App = ({ params }: Props) => {
       <Toaster />
       <>
         {loading ? (
-          <p>Loading...</p>
+          <div className="animate-pulse flex flex-col items-center gap-4 p-4">
+            <div>
+              <div className="w-48 h-6 bg-slate-400 rounded-md"></div>
+              <div className="w-28 h-4 bg-slate-400 mx-auto mt-3 rounded-md"></div>
+            </div>
+            <div className="h-7 bg-slate-400 w-full rounded-md"></div>
+            <div className="h-7 bg-slate-400 w-full rounded-md"></div>
+            <div className="h-7 bg-slate-400 w-full rounded-md"></div>
+            <div className="h-7 bg-slate-400 w-1/2 rounded-md"></div>
+            <div className="h-7 bg-slate-400 w-full rounded-md"></div>
+            <div className="h-7 bg-slate-400 w-full rounded-md"></div>
+            <div className="h-7 bg-slate-400 w-1/2 rounded-md"></div>
+            <div className="h-7 bg-slate-400 w-full rounded-md"></div>
+          </div>
         ) : (
           <>
             {hadObject ? (
               <>
-                <div className="m-3">
-                  <a
-                    href={url}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="bg-purple-500 hover:bg-purple-800 text-white font-bold py-2 px-4 rounded-sm animate-pulse"
-                  >
-                    Download
-                  </a>
-                  <p>{url}</p>
+                <div className="border-b-2 border-gray-500 mt-5 pb-3 text-white bg-slate-900 h-20 m-3 item-center content-center justify-center text-center">
+                  <label htmlFor="url">Your File </label>
+                  <br />
+                  <div className="m-3">
+                    <a
+                      href={url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="bg-purple-500 hover:bg-purple-800 text-white font-bold py-2 px-4 rounded-sm animate-pulse"
+                    >
+                      View ＆ Download
+                    </a>
+                  </div>
                 </div>
               </>
             ) : (
@@ -158,6 +177,8 @@ const App = ({ params }: Props) => {
                   seconds
                 </p>
                 <input type="file" onChange={handleFileChange} multiple />
+                <br />
+                <input type="text" onChange={(e) => setText(e.target.value)} />
                 <button onClick={handleUpload}>Upload</button>
               </>
             )}

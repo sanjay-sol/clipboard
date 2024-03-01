@@ -19,4 +19,3 @@ export const GET = async(req: NextRequest, res: NextResponse) => {
     }
    
 }
-
