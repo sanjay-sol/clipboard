@@ -28,7 +28,7 @@ export const getSignedUrl = async (
  * @returns A promise that resolves to the upload response.
  */
 
-export const uploadFile = async (url: string, file: File | Blob): Promise<any> => {
+export const uploadFile = async (url: string, file: File | Blob | any): Promise<any> => {
   try {
     const response = await axios.put(url, file, {
       headers: {
