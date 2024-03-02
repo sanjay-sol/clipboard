@@ -24,9 +24,9 @@ To run the application locally:
 
 ## Technologies Used
 
+- AWS S3 for secure storage of objects.
 - React.js for the frontend user interface.
 - Next.js for server-side rendering and routing.
-- AWS S3 for secure storage of objects.
 - Axios for making HTTP requests.
 - JSZip for file compression.
 
