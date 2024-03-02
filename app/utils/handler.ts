@@ -8,6 +8,7 @@ const API_URI = "/api/aws";
  * @param slug The slug for the API endpoint.
  * @returns A promise that resolves to the signed URL.
  */
+
 export const getSignedUrl = async (
   slug: string
 ): Promise<string | undefined> => {
