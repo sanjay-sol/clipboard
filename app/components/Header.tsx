@@ -1,9 +1,9 @@
-import React from 'react'
+import React from "react";
 
-const Header = () => {
+const Header: React.FC = () => {
   return (
     <div>
-      <nav className=" bg-slate-900 p-5 m-4 ">
+      <nav className="bg-slate-900 p-5 m-4">
         <span className="text-3xl font-serif font-extrabold text-gray-300">
           Cl1p
         </span>{" "}
@@ -11,6 +11,6 @@ const Header = () => {
       </nav>
     </div>
   );
-}
+};
 
-export default Header
+export default Header;

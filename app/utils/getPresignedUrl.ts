@@ -9,6 +9,7 @@ dotenv.config();
  * @param slug The key (path) of the object in the bucket.
  * @returns A promise that resolves to the presigned URL.
  */
+
 const getPresignedUrl = async (slug: string): Promise<string | undefined> => {
   try {
     const putObjectCommand = new PutObjectCommand({

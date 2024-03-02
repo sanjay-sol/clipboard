@@ -27,6 +27,7 @@ export const getSignedUrl = async (
  * @param file The file to upload.
  * @returns A promise that resolves to the upload response.
  */
+
 export const uploadFile = async (url: string, file: File): Promise<any> => {
   try {
     const response = await axios.put(url, file, {
