@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import getPresignedUrl from "@/app/utils/getPresignedUrl";
 import checkObjectExist from "@/app/utils/checkObjectExist";
 
-const bucketName: string = process.env.AWS_BUCKET || "";
+const bucketName: string = process.env.AWS_BUCKET_VAR || "";
 
 export const GET = async (req: NextRequest, res: NextResponse) => {
   try {

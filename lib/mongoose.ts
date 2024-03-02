@@ -4,9 +4,9 @@ let isConnected = false;
 
 export const connectToDB = async (): Promise<void> => {
   try {
-    const MONGO_URL: string | undefined = process.env.MONGO_URL;
+    const MONGO_URL_VAR: string | undefined = process.env.MONGO_URL;
 
-    if (!MONGO_URL) {
+    if (!MONGO_URL_VAR) {
       console.log("MongoDB URL not found");
       return;
     }
@@ -15,7 +15,7 @@ export const connectToDB = async (): Promise<void> => {
       console.log("Already connected to MongoDB");
       return;
     } else {
-      await mongoose.connect(MONGO_URL);
+      await mongoose.connect(MONGO_URL_VAR);
       isConnected = true;
       console.log("Connected to MongoDB");
     }
