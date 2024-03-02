@@ -17,9 +17,8 @@ export const POST = async (req: NextRequest, res: NextResponse): Promise<NextRes
   try {
       await connectToDB();
       const reqUrl = req.url?.split('/db/')[1];
-      console.log("reqUrl", reqUrl)
       const text = await req.text();
-      console.log("text", text)
+      console.log("text---", text)
       const clipExist = await getClip(reqUrl);
       if (clipExist) {
             return NextResponse.json({ message: "Clip already exist" }, { status: 400 });

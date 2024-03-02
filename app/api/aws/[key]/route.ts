@@ -9,10 +9,10 @@ export const GET = async(req: NextRequest, res: NextResponse) => {
         const reqUrl = req.url?.split('/');
         const key = reqUrl[5];
         const exists = await checkObjectExist(bucketName, key);
-        const url = await getPresignedUrl(key);
         if (exists) {
             return NextResponse.json({ url :"" }, { status: 200 });
         }
+        const url = await getPresignedUrl(key);
     return NextResponse.json({ url: url }, { status: 200 }); 
     } catch (error : any) {
         return NextResponse.json({ error: error.message }, { status: 500 });
