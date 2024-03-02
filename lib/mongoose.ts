@@ -2,11 +2,14 @@ import mongoose from "mongoose";
 
 let isConnected = false;
 
-export const connectToDB = async () => {
-  const MONGO_URL =
-    process.env.MONGO_URL || process.env.NEXT_PUBLIC_MONGO_URL || "";
+export const connectToDB = async (): Promise<void> => {
   try {
-    if (!MONGO_URL) return console.log("MongoDB url not found");
+    const MONGO_URL: string | undefined = process.env.MONGO_URL;
+
+    if (!MONGO_URL) {
+      console.log("MongoDB URL not found");
+      return;
+    }
 
     if (isConnected) {
       console.log("Already connected to MongoDB");
@@ -15,9 +18,8 @@ export const connectToDB = async () => {
       await mongoose.connect(MONGO_URL);
       isConnected = true;
       console.log("Connected to MongoDB");
-      return;
     }
-  } catch (err) {
-    console.log(err + "Error connecting to MongoDB");
+  } catch (err: any) {
+    console.log("Error connecting to MongoDB:", err);
   }
 };

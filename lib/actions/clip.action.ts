@@ -4,7 +4,6 @@ interface Params {
   name: string;
   text: string;
 }
-//J90FaiMQ3A2t8M3r
 
 export async function createClip({ name, text }: Params): Promise<void> {
   try {

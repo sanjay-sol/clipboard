@@ -1,20 +1,28 @@
-import { timeStamp } from "console";
-import mongoose from "mongoose";
+import mongoose, { Document, Model, Schema } from "mongoose";
 
-const Clip_Schema = new mongoose.Schema({
+interface ClipDocument extends Document {
+  name: string;
+  text?: string;
+}
+
+const ClipSchema: Schema<ClipDocument> = new mongoose.Schema(
+  {
     name: {
-        type: String,
-        required: true,
-        unique: true,
+      type: String,
+      required: true,
+      unique: true,
     },
     text: {
-        type: String,
-    }
-},{
-    timestamps: true
-}
+      type: String,
+    },
+  },
+  {
+    timestamps: true,
+  }
 );
 
-const Clip = mongoose.models.newClip || mongoose.model("newClip", Clip_Schema);
+const Clip: Model<ClipDocument> =
+  mongoose.models.newClip ||
+  mongoose.model<ClipDocument>("newClip", ClipSchema);
 
 export default Clip;
