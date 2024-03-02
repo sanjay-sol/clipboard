@@ -1,6 +1,4 @@
 "use client";
-
-
 import React, { useState, useEffect } from "react";
 import { getSignedUrl, uploadFile } from "../utils/handler";
 import { getObjectUrl } from "../utils/getObject";
@@ -17,7 +15,7 @@ type Props = {
 
 type State = {
   url: string;
-  selectedFiles: File[];
+  selectedFiles: File[]  ;
   hadObject: boolean;
   loading: boolean;
   timeLeft: number;
@@ -65,7 +63,7 @@ const App: React.FC<Props> = ({ params }) => {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const signedUrl: string = await getSignedUrl(param);
+        const signedUrl: string | undefined = await getSignedUrl(param);
         const result = await axios.get(`/api/db/${param}`);
         if (result?.data?.posts) {
           setState((prevState) => ({
